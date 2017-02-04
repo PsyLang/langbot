@@ -1,0 +1,43 @@
+http://opennmt.net/Guide/
+
+$ docker pull harvardnlp/opennmt:8.0
+$ docker run -it harvardnlp/opennmt:8.0
+~# git clone https://github.com/opennmt/opennmt
+~# cd OpenNMT
+
+1) Preprocess the data.
+th preprocess.lua -train_src data/src-train.txt -train_tgt data/tgt-train.txt -valid_src data/src-val.txt -valid_tgt data/tgt-val.txt -save_data data/demo
+
+data/ 폴더에 학습에 필요한 예제 데이터 들이 들어 있다. 데이터는 소스(src)와 타켓(tgt)데이터로 구성되어 있다. 위의 명령은 소스/타겟과 학습/평가 파일을 지정해주는 것이다. 위의 명령어를 실행하면 다음과 같은 파일이 생성된다.
+- demo.src.dict: Dictionary of source vocab to index mappings.
+- demo.tgt.dict: Dictionary of target vocab to index mappings.
+- demo-train.t7: serialized Torch file containing vocabulary, training and validation data
+*.dict 파일은 어휘를 확인거나 고정된 어휘를 이용하여 데이터를 전처리하는데 필요하다. 이 파일은 사람이 읽을 수 있는 간단한 사전이다.
+
+data/demo.src.dict를 간단히 살펴보면 아래와 같다.
+<blank> 1
+<unk> 2
+<s> 3
+</s> 4
+It 5
+is 6
+not 7
+acceptable 8
+that 9
+, 10
+with 11
+
+시스템은 내부적으로 단어 자체를 건들지 않고 인덱스를 사용한다.
+
+
+2) Train the model.
+th train.lua -data data/demo-train.t7 -save_model model [-gpuid 1]
+
+위의 명령어는 기본(default) 모델로 학습하는데, 기본 모델은 인코더와 디코더의 경우 모두 500개의 히든 유닛을 갖는 2-layer LSTM 이다. 또한 -gpuid 1 명령어를 통해 GPU를 사용할 수 있다.
+
+
+
+3) Translate sentences.
+th translate.lua -model model_final.t7 -src data/src-val.txt -output file-tgt.tok [-gpuid 1]
+
+data/src-val.txt 데이터를 학습 모델을 통해 번역해보자. 위 명령어를 통해 산출된 예측 값인 file-tat.tok은 학습데이터가 작기 때문에 엉망일 것이다.
